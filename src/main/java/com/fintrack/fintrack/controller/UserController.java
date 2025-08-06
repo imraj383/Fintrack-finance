@@ -25,8 +25,8 @@ public class UserController {
 
     @PostMapping("/api/adduser")
     public String addUser(@RequestBody User user){
-        String s = userService.addUser(user);
-        return s;
+        String str = userService.addUser(user);
+        return str;
 
     }
 }
