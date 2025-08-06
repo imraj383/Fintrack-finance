@@ -1,9 +1,13 @@
 package com.fintrack.fintrack.service;
 
+import com.fintrack.fintrack.dto.UserDTO;
 import com.fintrack.fintrack.model.User;
 
 import java.util.List;
 
 public interface UserService {
-     List<User> getAllUsers();
+     List<UserDTO> getAllUsers();
+
+     String addUser(User user);
+
 }
