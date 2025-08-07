@@ -10,4 +10,9 @@ public interface UserService {
 
      String addUser(User user);
 
+     User saveUser(UserDTO userDTO);
+
+     UserDTO updateUser(int id, UserDTO userDTO);
+
+     String deleteUser(int id);
 }

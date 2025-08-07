@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,7 +21,7 @@ public class UserServiceImpl implements UserService{
 
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail()))
+                .map(user -> new UserDTO(user.getId(), user.getName(), user.getEmail(),user.getPassword()))
                 .collect(Collectors.toList());
 
     }
@@ -30,4 +31,43 @@ public class UserServiceImpl implements UserService{
         userRepository.save(user);
         return "Success";
     }
+
+    @Override
+    public User saveUser(UserDTO userDTO) {
+        User user = new User();
+        user.setName(userDTO.getName());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+        return userRepository.save(user);
+    }
+
+    @Override
+    public UserDTO updateUser(int id, UserDTO userDTO) {
+        //   Optional<User> user =  userRepository.findById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+
+        user.setId(id);
+        user.setName(userDTO.getName());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+
+        User updatedUser = userRepository.save(user);
+
+        // Step 4: Return as UserDTO
+        return new UserDTO(
+                updatedUser.getId(),
+                updatedUser.getName(),
+                updatedUser.getEmail(),
+                updatedUser.getPassword()
+        );
+    }
+
+    @Override
+    public String deleteUser(int id) {
+        userRepository.deleteById(id);
+        String s = "Id has been deleted";
+        return s;
+    }
+
 }
