@@ -2,6 +2,8 @@ package com.fintrack.fintrack.service;
 
 import com.fintrack.fintrack.dto.UserDTO;
 import com.fintrack.fintrack.model.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.List;
 
@@ -15,4 +17,6 @@ public interface UserService {
      UserDTO updateUser(int id, UserDTO userDTO);
 
      String deleteUser(int id);
+
+     UserDetails loadUserByUsername(String email) throws UsernameNotFoundException;
 }
