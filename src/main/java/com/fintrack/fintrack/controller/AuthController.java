@@ -6,14 +6,16 @@ import com.fintrack.fintrack.model.AuthRequest;
 import com.fintrack.fintrack.model.AuthResponse;
 import com.fintrack.fintrack.model.User;
 import com.fintrack.fintrack.repository.UserRepository;
+import com.fintrack.fintrack.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,6 +29,9 @@ public class AuthController {
     private JwtUtil jwtUtil;
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private CustomUserDetailsService userDetails;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserDTO userDTO) {
@@ -42,21 +47,28 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
-        } catch (Exception e) {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication error");
         }
-        String token = jwtUtil.generateToken(authRequest.getEmail());
+
+        final UserDetails userD = userDetails.loadUserByUsername(request.getEmail());
+        final String token = jwtUtil.generateToken(userD.getUsername());
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @GetMapping("/profile")
     public ResponseEntity<?> profile(Authentication authentication) {
         String email = authentication.getName();
-        User user = (User) userRepository.findByEmail(email).orElseThrow();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         return ResponseEntity.ok(user);
     }
+
 }

@@ -18,5 +18,4 @@ public interface UserService {
 
      String deleteUser(int id);
 
-     UserDetails loadUserByUsername(String email) throws UsernameNotFoundException;
 }
